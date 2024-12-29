@@ -15,7 +15,7 @@
 *.out
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
+vendor/
 
 # Go workspace file
 go.work
@@ -26,6 +26,6 @@ bin/
 .DS_Store
 ._*
 log/
-*.mod
-*.sum
+go.mod
+go.sum
 Diseño.*
