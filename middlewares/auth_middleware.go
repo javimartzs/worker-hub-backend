@@ -14,10 +14,11 @@ var revokedTokens = make(map[string]time.Time)
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		// Leemos el encabezado Authorization
 		authHeader := c.GetHeader("Authorization")
 		if !strings.HasPrefix(authHeader, "Bearer ") {
 			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "Token invalido o nulo",
+				"error": "Missing or invalid token",
 			})
 			c.Abort()
 			return
@@ -25,14 +26,16 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
+		// Verificamos si el token ha sido revocado
 		if revocationTime, revoked := revokedTokens[tokenString]; revoked && time.Now().Before(revocationTime) {
 			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "El Token ha sido revocado",
+				"error": "Token has been revoked",
 			})
 			c.Abort()
 			return
 		}
 
+		// Validamos el token
 		claims, err := utils.ValidateJWT(tokenString)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{
@@ -42,8 +45,12 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		// Pasamos los datos del usuario al contexto
 		c.Set("id", (*claims)["id"])
 		c.Set("role", (*claims)["role"])
+		if storeID, ok := (*claims)["store_id"].(string); ok && storeID != "" {
+			c.Set("store_id", storeID)
+		}
 		c.Next()
 	}
 }

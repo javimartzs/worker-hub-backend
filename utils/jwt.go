@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -12,12 +13,12 @@ var JwtKey = []byte(config.Env.JwtKey)
 
 // Funcion que genera los Json Web Tokens
 // ------------------------------------------------------------------
-func GenerateJWT(id, role string) (string, error) {
-
+func GenerateJWT(role, id, storeID string) (string, error) {
 	claims := jwt.MapClaims{
-		"id":   id,
-		"role": role,
-		"exp":  time.Now().Add(time.Hour * 18).Unix(),
+		"role":     role,
+		"id":       id,
+		"store_id": storeID, // Añadimos el store_id como parte de los claims
+		"exp":      time.Now().Add(time.Hour * 18).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -27,7 +28,6 @@ func GenerateJWT(id, role string) (string, error) {
 // Funcion para validar el token y retornar sus claims
 // ------------------------------------------------------------------
 func ValidateJWT(tokenString string) (*jwt.MapClaims, error) {
-
 	claims := &jwt.MapClaims{}
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
@@ -36,13 +36,18 @@ func ValidateJWT(tokenString string) (*jwt.MapClaims, error) {
 
 	if err != nil {
 		if errors.Is(err, jwt.ErrTokenExpired) {
-			return nil, errors.New("la sesión a expirado")
+			return nil, errors.New("the session has expired")
 		}
-		return nil, errors.New("token invalido")
+		return nil, errors.New("invalid token")
 	}
 
 	if !token.Valid {
-		return nil, errors.New("token invalido")
+		return nil, errors.New("invalid token")
+	}
+
+	// Acceder al store_id (si existe)
+	if storeID, ok := (*claims)["store_id"].(string); ok && storeID != "" {
+		fmt.Println("Store ID:", storeID)
 	}
 
 	return claims, nil
