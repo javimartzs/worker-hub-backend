@@ -28,3 +28,20 @@ func ValidateWorkerFields(worker *models.Worker) error {
 	}
 	return nil
 }
+
+// Funcion para validar los campos de las tiendas
+func ValidateStoreFields(store *models.Store) error {
+	if store.Name == "" {
+		return errors.New("el nombre de la tienda es obligatorio")
+	}
+	if store.City == "" {
+		return errors.New("la ciudad de la tienda es obligatoria")
+	}
+	if store.Phone < 100000000 || store.Phone > 999999999 {
+		return errors.New("el telefono de la tienda debe tener 9 dígitos")
+	}
+	if store.Status == "" {
+		return errors.New("el estado de la tienda es obligatorio")
+	}
+	return nil
+}

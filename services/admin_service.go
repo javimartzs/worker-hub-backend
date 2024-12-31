@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/javimartzs/worker-hub-backend/config"
 	"github.com/javimartzs/worker-hub-backend/models"
 	"github.com/javimartzs/worker-hub-backend/repositories"
 	"github.com/javimartzs/worker-hub-backend/utils"
@@ -15,16 +16,20 @@ import (
 type AdminService struct {
 	userRepo   *repositories.UserRepository
 	workerRepo *repositories.WorkerRepository
-	db         *gorm.DB
+	storeRepo  *repositories.StoreRepository
+
+	db *gorm.DB
 }
 
 func NewAdminService(
 	userRepo *repositories.UserRepository,
 	workerRepo *repositories.WorkerRepository,
+	storeRepo *repositories.StoreRepository,
 	db *gorm.DB) *AdminService {
 	return &AdminService{
 		userRepo:   userRepo,
 		workerRepo: workerRepo,
+		storeRepo:  storeRepo,
 		db:         db,
 	}
 }
@@ -192,4 +197,152 @@ func (s *AdminService) UpdateWorker(workerID string, worker *models.Worker) erro
 
 	// Llamamos al repositorio para actualizar el trabajador
 	return s.workerRepo.UpdateWorker(workerID, worker)
+}
+
+// CreateStore - Crea una nueva tienda y su usuario asociado
+// --------------------------------------------------------------------
+func (s *AdminService) CreateStore(store *models.Store) error {
+
+	// Validaciones de los campos de la tienda
+	if err := utils.ValidateStoreFields(store); err != nil {
+		return err
+	}
+
+	// Comprobamos que la tienda no exista ya en la base de datos
+	existingStore, err := s.storeRepo.FindStoreByName(store.Name)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// No existe la tienda, esto está bien
+		} else {
+			return errors.New("error al verificar la existencia de la tienda")
+		}
+	}
+	if existingStore != nil && existingStore.ID != "" {
+		return errors.New("la tienda ya existe")
+	}
+
+	// Iniciamos la transaccion
+	tx := s.db.Begin()
+	if tx.Error != nil {
+		return errors.New("error al iniciar la transaccion")
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Generamos un nombre de usuario unico para la tienda
+	username, err := generateUniqueUsername(tx, s.userRepo, store.Name)
+	if err != nil {
+		tx.Rollback()
+		return errors.New("error al generar el nombre de usuario")
+	}
+
+	// Generamos la contraseña de la tienda
+	password := config.Env.StorePass
+	hashedPassword, err := utils.HashPassword(password)
+	if err != nil {
+		tx.Rollback()
+		return errors.New("error al generar la contraseña")
+	}
+
+	// Creamos el usuario de la tienda
+	user := &models.User{
+		ID:       uuid.New().String(),
+		Username: username,
+		Password: hashedPassword,
+		Role:     "store",
+	}
+
+	// Guardamos el usuario en la tabla de usuarios
+	if err := s.userRepo.CreateUser(tx, user); err != nil {
+		tx.Rollback()
+		return errors.New("error al guardar el trabajador en la tablaa")
+	}
+
+	// Generamos el ID de la tienda
+	store.ID = uuid.New().String()
+	store.UserID = user.ID
+
+	// Guardamos la tienda en la tabla de tiendas
+	if err := s.storeRepo.CreateStore(tx, store); err != nil {
+		tx.Rollback()
+		return errors.New("error al guardar la tienda en la tabla")
+	}
+
+	// Confirmamos la transaccion
+	if err := tx.Commit().Error; err != nil {
+		return errors.New("error al confirmar la transaccion")
+	}
+
+	return nil
+}
+
+// DeleteStore - Elimina una tienda y su usuario asociado
+// --------------------------------------------------------------------
+func (s *AdminService) DeleteStore(storeID string) error {
+
+	// Iniciamos la transaccion
+	tx := s.db.Begin()
+	if tx.Error != nil {
+		return errors.New("error al iniciar la transaccion")
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Buscamos la tienda por su ID
+	store, err := s.storeRepo.FindStoreByID(storeID)
+	if err != nil {
+		tx.Rollback()
+		return errors.New("error al buscar la tienda")
+	}
+	if store == nil {
+		tx.Rollback()
+		return errors.New("la tienda no existe")
+	}
+
+	// Eliminamos la tienda
+	if err := s.storeRepo.DeleteStore(tx, storeID); err != nil {
+		tx.Rollback()
+		return errors.New("error al eliminar la tienda")
+	}
+
+	// Eliminamos el usuario asociado a la tienda
+	if err := s.userRepo.DeleteUser(tx, store.UserID); err != nil {
+		tx.Rollback()
+		return errors.New("error al eliminar el usuario")
+	}
+
+	// Confirmamos la transaccion
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return errors.New("error al confirmar la transaccion")
+	}
+
+	return nil
+}
+
+// GetAllStores - Obtiene todas las tiendas
+// --------------------------------------------------------------------
+func (s *AdminService) GetAllStores() ([]models.Store, error) {
+	return s.storeRepo.GetAllStores()
+}
+
+// UpdateStore - Actualiza una tienda
+// --------------------------------------------------------------------
+func (s *AdminService) UpdateStore(storeID string, store *models.Store) error {
+
+	// Validaciones de los campos de la tienda
+	if err := utils.ValidateStoreFields(store); err != nil {
+		return err
+	}
+
+	// Llamamos al repositorio para actualizar la tienda
+	return s.storeRepo.UpdateStore(storeID, store)
 }

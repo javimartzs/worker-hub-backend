@@ -14,11 +14,20 @@ func SetupRoutes(
 		// Rutas para el administrador
 		adminGroup := apiGroup.Group("/admin")
 		{
+			// Rutas de tiendas
+			adminGroup.POST("/stores/create", adminHandler.CreateStore)
+			adminGroup.POST("/stores/delete/:id", adminHandler.DeleteStore)
+			adminGroup.GET("/stores", adminHandler.GetAllStores)
+			adminGroup.POST("/stores/update/:id", adminHandler.UpdateStore)
+
 			// Rutas de trabajadores
 			adminGroup.POST("/workers/create", adminHandler.CreateWorker)
 			adminGroup.POST("/workers/delete/:id", adminHandler.DeleteWorker)
 			adminGroup.GET("/workers", adminHandler.GetAllWorkers)
 			adminGroup.POST("/workers/update/:id", adminHandler.UpdateWorker)
+
+			// Rutas de vacaciones
+
 		}
 	}
 }

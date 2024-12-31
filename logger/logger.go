@@ -13,7 +13,7 @@ var Logger *zap.Logger
 func InitializeLogger() {
 
 	// Folder where logd will be stored
-	logFolder := "logs"
+	logFolder := "log"
 	if _, err := os.Stat(logFolder); os.IsNotExist(err) {
 		err := os.Mkdir(logFolder, os.ModePerm)
 		if err != nil {
