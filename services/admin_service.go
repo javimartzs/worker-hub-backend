@@ -14,9 +14,10 @@ import (
 )
 
 type AdminService struct {
-	userRepo   *repositories.UserRepository
-	workerRepo *repositories.WorkerRepository
-	storeRepo  *repositories.StoreRepository
+	userRepo     *repositories.UserRepository
+	workerRepo   *repositories.WorkerRepository
+	storeRepo    *repositories.StoreRepository
+	holidaysRepo *repositories.HolidaysRepository
 
 	db *gorm.DB
 }
@@ -25,12 +26,14 @@ func NewAdminService(
 	userRepo *repositories.UserRepository,
 	workerRepo *repositories.WorkerRepository,
 	storeRepo *repositories.StoreRepository,
+	holidaysRepo *repositories.HolidaysRepository,
 	db *gorm.DB) *AdminService {
 	return &AdminService{
-		userRepo:   userRepo,
-		workerRepo: workerRepo,
-		storeRepo:  storeRepo,
-		db:         db,
+		userRepo:     userRepo,
+		workerRepo:   workerRepo,
+		storeRepo:    storeRepo,
+		holidaysRepo: holidaysRepo,
+		db:           db,
 	}
 }
 
@@ -345,4 +348,46 @@ func (s *AdminService) UpdateStore(storeID string, store *models.Store) error {
 
 	// Llamamos al repositorio para actualizar la tienda
 	return s.storeRepo.UpdateStore(storeID, store)
+}
+
+// CreateHoliday - Crea una nueva vacacion
+// --------------------------------------------------------------------
+func (s *AdminService) CreateHoliday(holiday *models.Holiday) error {
+
+	// Validaciones de los campos
+	if err := utils.ValidateHolidaysFields(holiday); err != nil {
+		return err
+	}
+
+	// Llamamos al repositorio para crear las vacaciones de un trabajador
+	if err := s.holidaysRepo.CreateHoliday(holiday); err != nil {
+		return errors.New("error al crear las vacaciones")
+	}
+
+	return nil
+}
+
+// GetAllHolidays - Obtiene todas las vacaciones
+// --------------------------------------------------------------------
+func (s *AdminService) GetAllHolidays() ([]models.Holiday, error) {
+	return s.holidaysRepo.GetAllHolidays()
+}
+
+// DeleteHoliday - Elimina una vacacion
+// --------------------------------------------------------------------
+func (s *AdminService) DeleteHoliday(holidayID string) error {
+	return s.holidaysRepo.DeleteHoliday(holidayID)
+}
+
+// UpdateHoliday - Actualiza una vacacion
+// --------------------------------------------------------------------
+func (s *AdminService) UpdateHoliday(holidayID string, holiday *models.Holiday) error {
+
+	// Validaciones de los campos
+	if err := utils.ValidateHolidaysFields(holiday); err != nil {
+		return err
+	}
+
+	// Llamamos al repositorio para actualizar la vacacion
+	return s.holidaysRepo.UpdateHoliday(holidayID, holiday)
 }

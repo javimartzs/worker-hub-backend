@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"time"
 
 	"github.com/javimartzs/worker-hub-backend/models"
 )
@@ -43,5 +44,29 @@ func ValidateStoreFields(store *models.Store) error {
 	if store.Status == "" {
 		return errors.New("el estado de la tienda es obligatorio")
 	}
+	return nil
+}
+
+// Funcion para validar los campos de las vacaciones
+func ValidateHolidaysFields(holiday *models.Holiday) error {
+
+	if holiday.WorkerID == "" {
+		return errors.New("el id del trabajador es obligatorio")
+	}
+	startDate, err := time.Parse("2006-01-02", holiday.StartDate)
+	if err != nil {
+		return errors.New("la fecha de inicio no tiene el formato YYYY-MM-DD")
+	}
+	endDate, err := time.Parse("2006-01-02", holiday.EndDate)
+	if err != nil {
+		return errors.New("la fecha de fin no tiene el formato YYYY-MM-DD")
+	}
+	if endDate.Before(startDate) {
+		return errors.New("la fecha de fin no puede ser anterior a la fecha de inicio")
+	}
+	if holiday.Status != "Pendientes" && holiday.Status != "Disfrutadas" {
+		return errors.New("el estado de la vacacion es obligatorio")
+	}
+
 	return nil
 }

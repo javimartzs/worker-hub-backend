@@ -7,5 +7,5 @@ type Order struct {
 	Product  string `json:"product" gorm:"size:250;not null"`
 	Quantity int    `json:"quantity" gorm:"not null"`
 	StoreID  string `json:"store_id" gorm:"not null"`
-	Store    Store  `json:"store" gorm:"foreignKey:StoreID;references:ID"`
+	Store    Store  `json:"-" gorm:"foreignKey:StoreID;references:ID"`
 }

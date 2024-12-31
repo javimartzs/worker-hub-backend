@@ -7,5 +7,5 @@ type Store struct {
 	Phone  int    `form:"phone" json:"phone" gorm:"size:25"`
 	Status string `form:"status" json:"status" gorm:"not null size:100"`
 	UserID string `json:"user_id" gorm:"not null"`
-	User   User   `json:"user" gorm:"foreignKey:UserID;references:ID"`
+	User   User   `json:"-" gorm:"foreignKey:UserID;references:ID"`
 }

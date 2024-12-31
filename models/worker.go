@@ -12,5 +12,5 @@ type Worker struct {
 	StoreID  *string `json:"store_id" gorm:"size:50"`
 	UserID   string  `json:"user_id" gorm:"not null"`
 	Store    Store   `json:"store" gorm:"foreignKey:StoreID;references:ID"`
-	User     User    `json:"user" gorm:"foreignKey:UserID;references:ID"`
+	User     User    `json:"-" gorm:"foreignKey:UserID;references:ID"`
 }

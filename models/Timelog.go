@@ -6,6 +6,6 @@ type Timelog struct {
 	WorkerID string `json:"worker_id" gorm:"not null"`
 	InOut    string `json:"in_out" gorm:"not null"`
 	Timelog  string `json:"timelog" gorm:"autoCreateTime"`
-	Store    Store  `json:"store" gorm:"foreignKey:StoreID;references:ID"`
-	Worker   Worker `json:"worker" gorm:"foreignKey:WorkerID;references:ID"`
+	Store    Store  `json:"-" gorm:"foreignKey:StoreID;references:ID"`
+	Worker   Worker `json:"-" gorm:"foreignKey:WorkerID;references:ID"`
 }
