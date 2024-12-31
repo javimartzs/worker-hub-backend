@@ -216,3 +216,102 @@ func (h *AdminHandler) UpdateStore(c *gin.Context) {
 		"store":   store,
 	})
 }
+
+// Handler para crear una nueva vacacion
+// --------------------------------------------------------------------
+func (h *AdminHandler) CreateHoliday(c *gin.Context) {
+
+	// Parseamos el cuerpo de la respuesta
+	var holiday models.Holiday
+	if err := c.ShouldBind(&holiday); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request",
+		})
+		return
+	}
+
+	// Llamamos al servicio para crear la vacacion
+	if err := h.adminService.CreateHoliday(&holiday); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// Devolvemos una respuesta exitosa
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Vacacion creada correctamente",
+	})
+}
+
+// Handler para obtener todas las vacaciones
+// --------------------------------------------------------------------
+func (h *AdminHandler) GetAllHolidays(c *gin.Context) {
+	holidays, err := h.adminService.GetAllHolidays()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "No se pudieron obtener las vacaciones",
+		})
+		return
+	}
+
+	// Devolvemos una respuesta exitosa
+	c.JSON(http.StatusOK, gin.H{
+		"holidays": holidays,
+	})
+}
+
+// Handler para eliminar una vacacion
+// --------------------------------------------------------------------
+func (h *AdminHandler) DeleteHoliday(c *gin.Context) {
+	holidayID := c.Param("id")
+	if holidayID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "ID de la vacacion requerido",
+		})
+		return
+	}
+
+	if err := h.adminService.DeleteHoliday(holidayID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Vacacion eliminada correctamente",
+	})
+}
+
+// Handler para actualizar los datos de una vacacion
+// --------------------------------------------------------------------
+func (h *AdminHandler) UpdateHoliday(c *gin.Context) {
+	holidayID := c.Param("id")
+	if holidayID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "ID de la vacacion requerido",
+		})
+		return
+	}
+
+	var holiday models.Holiday
+	if err := c.ShouldBind(&holiday); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request",
+		})
+		return
+	}
+
+	if err := h.adminService.UpdateHoliday(holidayID, &holiday); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Vacacion actualizada correctamente",
+		"holiday": holiday,
+	})
+}

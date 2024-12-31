@@ -24,9 +24,10 @@ func main() {
 	userRepo := repositories.NewUserRepository(db)
 	workerRepo := repositories.NewWorkerRepository(db)
 	storeRepo := repositories.NewStoreRepository(db)
+	holidaysRepo := repositories.NewHolidaysRepository(db)
 
 	// Iniciamos las instancias de los servicios
-	adminService := services.NewAdminService(userRepo, workerRepo, storeRepo, db)
+	adminService := services.NewAdminService(userRepo, workerRepo, storeRepo, holidaysRepo, db)
 
 	// Iniciamos las instancias de los handlers
 	adminHandler := handlers.NewAdminHandler(adminService)
