@@ -174,3 +174,22 @@ func (s *AdminService) DeleteWorker(workerID string) error {
 
 	return nil
 }
+
+// GetAllWorkers - Obtiene todos los trabajadores
+// --------------------------------------------------------------------
+func (s *AdminService) GetAllWorkers() ([]models.Worker, error) {
+	return s.workerRepo.GetAllWorkers()
+}
+
+// UpdateWorker - Actualiza un trabajador
+// --------------------------------------------------------------------
+func (s *AdminService) UpdateWorker(workerID string, worker *models.Worker) error {
+
+	// Validaciones de los campos del trabajador
+	if err := utils.ValidateWorkerFields(worker); err != nil {
+		return err
+	}
+
+	// Llamamos al repositorio para actualizar el trabajador
+	return s.workerRepo.UpdateWorker(workerID, worker)
+}

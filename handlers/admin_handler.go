@@ -52,7 +52,9 @@ func (h *AdminHandler) CreateWorker(c *gin.Context) {
 func (h *AdminHandler) DeleteWorker(c *gin.Context) {
 	workerID := c.Param("id")
 	if workerID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID del trabajador requerido"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "ID del trabajador requerido",
+		})
 		return
 	}
 
@@ -65,4 +67,52 @@ func (h *AdminHandler) DeleteWorker(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Trabajador eliminado exitosamente",
 	})
+}
+
+// Handler para obtener todos los trabajadores
+// --------------------------------------------------------------------
+func (h *AdminHandler) GetAllWorkers(c *gin.Context) {
+	workers, err := h.adminService.GetAllWorkers()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "No se pudieron obtener los trabajadores", "details": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"workers": workers})
+}
+
+// Handler para actualizar datos de un trabajador
+// --------------------------------------------------------------------
+func (h *AdminHandler) UpdateWorker(c *gin.Context) {
+	workerID := c.Param("id")
+	if workerID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "ID del trabajador requerido"})
+		return
+	}
+
+	var worker models.Worker
+	if err := c.ShouldBind(&worker); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid request",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	if err := h.adminService.UpdateWorker(workerID, &worker); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Error al actualizar el trabajador",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Trabajador actualizado correctamente",
+		"worker":  worker,
+	})
+
 }
