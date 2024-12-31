@@ -60,3 +60,19 @@ func (r *WorkerRepository) DeleteWorker(tx *gorm.DB, workerID string) error {
 	}
 	return r.db.Where("id = ?", workerID).Delete(&models.Worker{}).Error
 }
+
+// GetAllWorkers - Obtiene todos los trabajadores
+// --------------------------------------------------------------------
+func (r *WorkerRepository) GetAllWorkers() ([]models.Worker, error) {
+	var workers []models.Worker
+	if err := r.db.Find(&workers).Error; err != nil {
+		return nil, err
+	}
+	return workers, nil
+}
+
+// UpdateWorker - Actualiza un trabajador
+// --------------------------------------------------------------------
+func (r *WorkerRepository) UpdateWorker(workerID string, worker *models.Worker) error {
+	return r.db.Model(&models.Worker{}).Where("id = ?", workerID).Updates(worker).Error
+}
