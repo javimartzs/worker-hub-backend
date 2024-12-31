@@ -56,7 +56,7 @@ func createInitialAdmin(db *gorm.DB) {
 	}
 
 	// Crear el usuario admin inicial
-	hashedPassword, err := utils.HashPassword("pass") // Hashear la contraseña inicial
+	hashedPassword, err := utils.HashPassword(config.Env.DBPass) // Hashear la contraseña inicial
 	if err != nil {
 		logger.Logger.Error("Failed to hash admin password", zap.Error(err))
 	}
