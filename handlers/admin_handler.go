@@ -114,5 +114,105 @@ func (h *AdminHandler) UpdateWorker(c *gin.Context) {
 		"message": "Trabajador actualizado correctamente",
 		"worker":  worker,
 	})
+}
 
+// Handler para crear una tienda y su usuario asociado
+// --------------------------------------------------------------------
+func (h *AdminHandler) CreateStore(c *gin.Context) {
+
+	// Parseamos el cuerpo de la solicitud
+	var store models.Store
+	if err := c.ShouldBind(&store); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request",
+		})
+		return
+	}
+
+	// Llamamos al servicio para crear la tienda
+	if err := h.adminService.CreateStore(&store); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// Devolvemos una respuesta exitosa
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Tienda creada exitosamente",
+	})
+}
+
+// Handler para eliminar una tienda y su usuario asociado
+// --------------------------------------------------------------------
+func (h *AdminHandler) DeleteStore(c *gin.Context) {
+
+	storeID := c.Param("id")
+	if storeID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "ID de la tienda requerido",
+		})
+		return
+	}
+
+	// Llamamos al servicio para eliminar la tienda
+	if err := h.adminService.DeleteStore(storeID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// Devolvemos una respuesta exitosa
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Tienda eliminada exitosamente",
+	})
+}
+
+// Handler para obtener todas las tiendas
+// --------------------------------------------------------------------
+func (h *AdminHandler) GetAllStores(c *gin.Context) {
+	stores, err := h.adminService.GetAllStores()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "No se pudieron obtener las tiendas", "details": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"stores": stores,
+	})
+}
+
+// Handler para actualizar los datos de una tienda
+// --------------------------------------------------------------------
+func (h *AdminHandler) UpdateStore(c *gin.Context) {
+	storeID := c.Param("id")
+	if storeID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "ID de la tienda requerido"})
+		return
+	}
+
+	var store models.Store
+	if err := c.ShouldBind(&store); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid request",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	if err := h.adminService.UpdateStore(storeID, &store); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Error al actualizar la tienda",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Tienda actualizada correctamente",
+		"store":   store,
+	})
 }
