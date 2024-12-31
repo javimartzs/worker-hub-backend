@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/javimartzs/worker-hub-backend/config"
 	"github.com/javimartzs/worker-hub-backend/logger"
 	"github.com/javimartzs/worker-hub-backend/models"
@@ -61,6 +62,7 @@ func createInitialAdmin(db *gorm.DB) {
 	}
 
 	admin = models.User{
+		ID:       uuid.New().String(),
 		Username: "admin",
 		Password: hashedPassword,
 		Role:     "admin",
