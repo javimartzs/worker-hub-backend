@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"github.com/javimartzs/worker-hub-backend/models"
+	"github.com/javimartzs/worker-hub-backend/models/dtos"
 	"gorm.io/gorm"
 )
 
@@ -34,6 +35,19 @@ func (r *UserRepository) FindUserByUsername(tx *gorm.DB, username string) (*mode
 		return nil, err // Otro error ocurrió
 	}
 	return &user, nil
+}
+
+// GetAllUsers - Obtiene todos los usuarios
+// --------------------------------------------------------------------
+func (r *UserRepository) GetAllUsers() ([]dtos.UserList, error) {
+	var users []dtos.UserList
+	err := r.db.Table("users").
+		Select("users.id, users.username, users.role").
+		Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }
 
 // DeleteUser - Elimina un usuario
