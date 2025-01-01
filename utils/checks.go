@@ -70,3 +70,34 @@ func ValidateHolidaysFields(holiday *models.Holiday) error {
 
 	return nil
 }
+
+// Funcion para validar los campos de los usuarios
+func ValidateUserFields(user *models.User) error {
+	if user.Username == "" {
+		return errors.New("el nombre del usuario es obligatorio")
+	}
+	if user.Password == "" {
+		return errors.New("la contraseña del usuario es obligatoria")
+	}
+	if user.Role == "" {
+		return errors.New("el rol del usuario es obligatorio")
+	}
+	return nil
+}
+
+// Funcion para validar los campos de los registros horarios
+func ValidateTimelogFields(timelog *models.Timelog) error {
+	if timelog.WorkerID == "" {
+		return errors.New("el id del trabajador es obligatorio")
+	}
+	if timelog.StoreID == "" {
+		return errors.New("el id de la tienda es obligatorio")
+	}
+	if timelog.InOut != "Entrada" && timelog.InOut != "Salida" {
+		return errors.New("el estado de entrada/salida es obligatorio")
+	}
+	if timelog.Timelog == "" {
+		return errors.New("el registro horario es obligatorio")
+	}
+	return nil
+}

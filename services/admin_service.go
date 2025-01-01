@@ -19,6 +19,7 @@ type AdminService struct {
 	workerRepo   *repositories.WorkerRepository
 	storeRepo    *repositories.StoreRepository
 	holidaysRepo *repositories.HolidaysRepository
+	timelogRepo  *repositories.TimelogRepository
 
 	db *gorm.DB
 }
@@ -28,12 +29,14 @@ func NewAdminService(
 	workerRepo *repositories.WorkerRepository,
 	storeRepo *repositories.StoreRepository,
 	holidaysRepo *repositories.HolidaysRepository,
+	timelogRepo *repositories.TimelogRepository,
 	db *gorm.DB) *AdminService {
 	return &AdminService{
 		userRepo:     userRepo,
 		workerRepo:   workerRepo,
 		storeRepo:    storeRepo,
 		holidaysRepo: holidaysRepo,
+		timelogRepo:  timelogRepo,
 		db:           db,
 	}
 }
@@ -397,4 +400,94 @@ func (s *AdminService) UpdateHoliday(holidayID string, holiday *models.Holiday) 
 
 	// Llamamos al repositorio para actualizar la vacacion
 	return s.holidaysRepo.UpdateHoliday(holidayID, holiday)
+}
+
+// CreateUser - Crea un nuevo usuario
+// --------------------------------------------------------------------
+func (s *AdminService) CreateUser(user *models.User) error {
+
+	// Validaciones del formulario
+	if err := utils.ValidateUserFields(user); err != nil {
+		return err
+	}
+
+	// Comprobamos que el usuario no exista ya en la base de datos
+	existingUser, err := s.userRepo.FindUserByUsername(nil, user.Username)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// No existe el usuario, esto está bien
+		} else {
+			return errors.New("error al verificar la existencia del usuario")
+		}
+	}
+	if existingUser != nil && existingUser.ID != "" {
+		return errors.New("el usuario ya existe")
+	}
+
+	// Creamos el ID del usuario
+	user.ID = uuid.New().String()
+
+	// Encriptamos la contraseña del usuario
+	hashedPassword, err := utils.HashPassword(user.Password)
+	if err != nil {
+		return errors.New("error al encriptar la contraseña")
+	}
+	user.Password = hashedPassword
+
+	// Llamamos al repositorio para crear el usuario
+	if err := s.userRepo.CreateUser(nil, user); err != nil {
+		return errors.New("error al crear el usuario")
+	}
+
+	return nil
+}
+
+// GetAllUsers - Obtiene todos los usuarios
+// --------------------------------------------------------------------
+func (s *AdminService) GetAllUsers() ([]dtos.UserList, error) {
+	return s.userRepo.GetAllUsers()
+}
+
+// DeleteUser - Elimina un usuario
+// --------------------------------------------------------------------
+func (s *AdminService) DeleteUser(userID string) error {
+	return s.userRepo.DeleteUser(nil, userID)
+}
+
+// CreateTimelog - Crea un registro horario
+// --------------------------------------------------------------------
+func (s *AdminService) CreateTimelog(timelog *models.Timelog) error {
+
+	// Validaciones del formulario
+	if err := utils.ValidateTimelogFields(timelog); err != nil {
+		return err
+	}
+
+	// Comprobamos que el trabajador exista
+	worker, err := s.workerRepo.FindWorkerByID(timelog.WorkerID)
+	if err != nil {
+		return errors.New("error al buscar el trabajador")
+	}
+	if worker == nil {
+		return errors.New("el trabajador no existe")
+	}
+
+	// Comprobamos que la tienda exista
+	store, err := s.storeRepo.FindStoreByID(timelog.StoreID)
+	if err != nil {
+		return errors.New("error al buscar la tienda")
+	}
+	if store == nil {
+		return errors.New("la tienda no existe")
+	}
+
+	// Generamos el ID del registro horario
+	timelog.ID = uuid.New().String()
+
+	// Llamamos al repositorio para crear el registro horario
+	if err := s.timelogRepo.CreateTimelog(timelog); err != nil {
+		return errors.New("error al crear el registro horario")
+	}
+
+	return nil
 }

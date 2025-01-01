@@ -331,3 +331,91 @@ func (h *AdminHandler) UpdateHoliday(c *gin.Context) {
 		"holiday": holiday,
 	})
 }
+
+// Handler para crear un nuevo usuario
+// --------------------------------------------------------------------
+func (h *AdminHandler) CreateUser(c *gin.Context) {
+
+	var user models.User
+	if err := c.ShouldBind(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request",
+		})
+		return
+	}
+
+	// Llamamos al servicio para crear el usuario
+	if err := h.adminService.CreateUser(&user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Usuario creado correctamente",
+	})
+}
+
+// Handler para obtener todos los usuarios
+// --------------------------------------------------------------------
+func (h *AdminHandler) GetAllUsers(c *gin.Context) {
+	users, err := h.adminService.GetAllUsers()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "No se pudieron obtener los usuarios",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"users": users,
+	})
+}
+
+// Handler para eliminar un usuario
+// --------------------------------------------------------------------
+func (h *AdminHandler) DeleteUser(c *gin.Context) {
+	userID := c.Param("id")
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "ID del usuario requerido",
+		})
+		return
+	}
+
+	if err := h.adminService.DeleteUser(userID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Usuario eliminado correctamente",
+	})
+}
+
+// Handler para crear un registro horario
+// --------------------------------------------------------------------
+func (h *AdminHandler) CreateTimelog(c *gin.Context) {
+
+	var timelog models.Timelog
+	if err := c.ShouldBind(&timelog); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request",
+		})
+		return
+	}
+
+	if err := h.adminService.CreateTimelog(&timelog); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Registro horario creado correctamente",
+	})
+}

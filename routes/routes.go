@@ -30,7 +30,12 @@ func SetupRoutes(
 			adminGroup.POST("/holidays/update/:id", adminHandler.UpdateHoliday)
 			adminGroup.POST("/holidays/delete/:id", adminHandler.DeleteHoliday)
 			adminGroup.GET("/holidays/workers", adminHandler.GetHolidaysWithWorker)
-
+			// Rutas de usuarios
+			adminGroup.POST("/users/create", adminHandler.CreateUser)
+			adminGroup.GET("/users", adminHandler.GetAllUsers)
+			adminGroup.POST("/users/delete/:id", adminHandler.DeleteUser)
+			// Rutas de registros horarios
+			adminGroup.POST("/timelog/create", adminHandler.CreateTimelog)
 		}
 	}
 }
