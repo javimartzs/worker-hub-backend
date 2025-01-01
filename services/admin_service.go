@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/javimartzs/worker-hub-backend/config"
 	"github.com/javimartzs/worker-hub-backend/models"
+	"github.com/javimartzs/worker-hub-backend/models/dtos"
 	"github.com/javimartzs/worker-hub-backend/repositories"
 	"github.com/javimartzs/worker-hub-backend/utils"
 	"gorm.io/gorm"
@@ -371,6 +372,12 @@ func (s *AdminService) CreateHoliday(holiday *models.Holiday) error {
 // --------------------------------------------------------------------
 func (s *AdminService) GetAllHolidays() ([]models.Holiday, error) {
 	return s.holidaysRepo.GetAllHolidays()
+}
+
+// GetHolidaysWithWorker - Obtiene todas las vacaciones con el nombre del trabajador
+// --------------------------------------------------------------------
+func (s *AdminService) GetHolidaysWithWorker() ([]dtos.HolidayWithWorkerName, error) {
+	return s.holidaysRepo.GetHolidaysWithWorker()
 }
 
 // DeleteHoliday - Elimina una vacacion

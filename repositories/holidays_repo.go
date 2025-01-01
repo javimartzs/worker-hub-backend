@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"github.com/javimartzs/worker-hub-backend/models"
+	"github.com/javimartzs/worker-hub-backend/models/dtos"
 	"gorm.io/gorm"
 )
 
@@ -38,6 +39,24 @@ func (r *HolidaysRepository) GetAllHolidays() ([]models.Holiday, error) {
 	if err := r.db.Find(&holidays).Error; err != nil {
 		return nil, err
 	}
+	return holidays, nil
+}
+
+// GetHolidaysWithWorker - Obtiene todas las vacaciones con el nombre del trabajador
+// --------------------------------------------------------------------
+
+func (r *HolidaysRepository) GetHolidaysWithWorker() ([]dtos.HolidayWithWorkerName, error) {
+	var holidays []dtos.HolidayWithWorkerName
+
+	err := r.db.Table("holidays").
+		Select("holidays.*, workers.name as worker_name, workers.last_name as worker_last_name").
+		Joins("left join workers on workers.id = holidays.worker_id").
+		Find(&holidays).Error
+
+	if err != nil {
+		return nil, err
+	}
+
 	return holidays, nil
 }
 
