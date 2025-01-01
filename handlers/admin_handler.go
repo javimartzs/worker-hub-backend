@@ -261,6 +261,22 @@ func (h *AdminHandler) GetAllHolidays(c *gin.Context) {
 	})
 }
 
+// Handler para obtener todas las vacaciones con el nombre del trabajador
+// --------------------------------------------------------------------
+func (h *AdminHandler) GetHolidaysWithWorker(c *gin.Context) {
+	holidays, err := h.adminService.GetHolidaysWithWorker()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "No se pudieron obtener las vacaciones",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"holidays": holidays,
+	})
+}
+
 // Handler para eliminar una vacacion
 // --------------------------------------------------------------------
 func (h *AdminHandler) DeleteHoliday(c *gin.Context) {

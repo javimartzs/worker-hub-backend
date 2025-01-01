@@ -29,6 +29,7 @@ func SetupRoutes(
 			adminGroup.GET("/holidays", adminHandler.GetAllHolidays)
 			adminGroup.POST("/holidays/update/:id", adminHandler.UpdateHoliday)
 			adminGroup.POST("/holidays/delete/:id", adminHandler.DeleteHoliday)
+			adminGroup.GET("/holidays/workers", adminHandler.GetHolidaysWithWorker)
 
 		}
 	}
