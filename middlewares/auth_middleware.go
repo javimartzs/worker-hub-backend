@@ -48,9 +48,6 @@ func AuthMiddleware() gin.HandlerFunc {
 		// Pasamos los datos del usuario al contexto
 		c.Set("id", (*claims)["id"])
 		c.Set("role", (*claims)["role"])
-		if storeID, ok := (*claims)["store_id"].(string); ok && storeID != "" {
-			c.Set("store_id", storeID)
-		}
 		c.Next()
 	}
 }

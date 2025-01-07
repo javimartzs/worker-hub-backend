@@ -29,15 +29,16 @@ func main() {
 
 	// Iniciamos las instancias de los servicios
 	adminService := services.NewAdminService(userRepo, workerRepo, storeRepo, holidaysRepo, timelogRepo, db)
+	authService := services.NewAuthService(userRepo)
 
 	// Iniciamos las instancias de los handlers
 	adminHandler := handlers.NewAdminHandler(adminService)
-
+	authHandler := handlers.NewAuthHandler(authService)
 	// Iniciamos el router de Gin
 	router := gin.Default()
 
 	// Configuramos las rutas
-	routes.SetupRoutes(router, adminHandler)
+	routes.SetupRoutes(router, adminHandler, authHandler)
 
 	// Iniciamos el servidor
 	router.Run(":8080")

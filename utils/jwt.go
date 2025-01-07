@@ -2,7 +2,6 @@ package utils
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -13,12 +12,11 @@ var JwtKey = []byte(config.Env.JwtKey)
 
 // Funcion que genera los Json Web Tokens
 // ------------------------------------------------------------------
-func GenerateJWT(role, id, storeID string) (string, error) {
+func GenerateJWT(id, role string) (string, error) {
 	claims := jwt.MapClaims{
-		"role":     role,
-		"id":       id,
-		"store_id": storeID, // Añadimos el store_id como parte de los claims
-		"exp":      time.Now().Add(time.Hour * 18).Unix(),
+		"role": role,
+		"id":   id,
+		"exp":  time.Now().Add(time.Hour * 18).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -43,11 +41,6 @@ func ValidateJWT(tokenString string) (*jwt.MapClaims, error) {
 
 	if !token.Valid {
 		return nil, errors.New("invalid token")
-	}
-
-	// Acceder al store_id (si existe)
-	if storeID, ok := (*claims)["store_id"].(string); ok && storeID != "" {
-		fmt.Println("Store ID:", storeID)
 	}
 
 	return claims, nil
