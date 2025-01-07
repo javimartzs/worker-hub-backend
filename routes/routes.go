@@ -8,11 +8,19 @@ import (
 func SetupRoutes(
 	router *gin.Engine,
 	adminHandler *handlers.AdminHandler,
+	authHandler *handlers.AuthHandler,
 ) {
 	apiGroup := router.Group("/api") // Grupo de rutas para la API
 	{
+		// Rutas de autenticacion
+		authGroup := apiGroup.Group("/auth")
+		{
+			authGroup.POST("/admin", authHandler.LoginAdmin)
+		}
+
 		// Rutas para el administrador
 		adminGroup := apiGroup.Group("/admin")
+
 		{
 			// Rutas de tiendas
 			adminGroup.POST("/stores/create", adminHandler.CreateStore)
